@@ -24,11 +24,17 @@ export function* loadPrice(coin) {
   try {
     request = api.orderbook(getprices);
     const result = yield request;
-    const ask = result.asks.find(e => e.pubkey === bob);
+    let ask = null;
+    if (bob) {
+      debug('find order by pubkey');
+      ask = result.asks.find(e => e.pubkey === bob);
+    } else {
+      debug('not found pubkey so we are going to load first order');
+      ask = result.asks.find(e => e.maxvolume > 0);
+    }
     if (!ask) {
       throw new Error('dICO Bob is offline!');
     }
-
     bestprice = Number((ask.price * numcoin).toFixed(0));
     bestprice = Number(
       (((buf / numcoin) * bestprice) / numcoin).toFixed(8) * numcoin
